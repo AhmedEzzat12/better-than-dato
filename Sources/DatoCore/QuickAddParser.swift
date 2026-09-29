@@ -19,6 +19,16 @@ public struct QuickAddDraft: Equatable, Sendable {
     public var end: Date
     public var hasDueTime: Bool
     public var hasExplicitDate: Bool
+
+    /// All-day events are saved as one whole day (midnight to the next midnight), whatever time or
+    /// seconds-based length the date pickers left behind.
+    public func normalized(calendar: Calendar) -> QuickAddDraft {
+        guard kind == .event, isAllDay else { return self }
+        var copy = self
+        copy.start = calendar.startOfDay(for: start)
+        copy.end = calendar.date(byAdding: .day, value: 1, to: copy.start) ?? copy.start
+        return copy
+    }
 }
 
 /// Parses "Lunch with Sara tomorrow 1pm 1h #work" or "!Pay rent friday".

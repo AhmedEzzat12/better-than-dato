@@ -141,3 +141,30 @@ import Testing
         #expect(bang.title == "")
     }
 }
+
+@Suite struct QuickAddDraftNormalizationTests {
+    let cal = Fixture.calendar
+
+    func draft(kind: QuickAddKind = .event, allDay: Bool, start: Date, end: Date) -> QuickAddDraft {
+        QuickAddDraft(
+            kind: kind, title: "T", calendarID: nil, unmatchedCalendarToken: nil, isAllDay: allDay,
+            start: start, end: end, hasDueTime: false, hasExplicitDate: true
+        )
+    }
+
+    @Test func allDayEventBecomesOneWholeDay() {
+        // Start moved by the picker keeps a 25-hour "length" (DST fall-back) and a non-midnight time.
+        let start = Fixture.date(2026, 10, 1, 10, 30)
+        let normalized = draft(allDay: true, start: start, end: start.addingTimeInterval(25 * 3600)).normalized(calendar: cal)
+        #expect(normalized.start == Fixture.date(2026, 10, 1))
+        #expect(normalized.end == Fixture.date(2026, 10, 2))
+    }
+
+    @Test func timedEventsAndRemindersAreUntouched() {
+        let start = Fixture.date(2026, 10, 1, 10, 30)
+        let timed = draft(allDay: false, start: start, end: start.addingTimeInterval(1800))
+        #expect(timed.normalized(calendar: cal) == timed)
+        let reminder = draft(kind: .reminder, allDay: true, start: start, end: start)
+        #expect(reminder.normalized(calendar: cal) == reminder)
+    }
+}

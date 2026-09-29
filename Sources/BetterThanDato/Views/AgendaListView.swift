@@ -26,8 +26,9 @@ struct AgendaListView: View {
                 .padding(.bottom, 8)
             }
             .onChange(of: model.selectedDay) { _, day in
-                guard let day else { return }
-                withAnimation { proxy.scrollTo(model.calendar.startOfDay(for: day), anchor: .top) }
+                // Back to "upcoming" (Today button, T) scrolls to the top.
+                guard let target = day.map(model.calendar.startOfDay(for:)) ?? model.agenda.first?.date else { return }
+                withAnimation { proxy.scrollTo(target, anchor: .top) }
             }
         }
     }

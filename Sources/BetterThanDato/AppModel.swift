@@ -40,6 +40,13 @@ final class AppModel {
     var selectedDay: Date?
     var popoverMode: PopoverMode = .agenda
     var isPinned = false
+    /// Bumped each time the popover opens so its views start fresh (scroll position, expanded rows).
+    private(set) var popoverSession = 0
+
+    func beginPopoverSession() {
+        popoverSession += 1
+        goToToday()
+    }
 
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var tickTask: Task<Void, Never>?
@@ -59,7 +66,11 @@ final class AppModel {
         let center = NotificationCenter.default
         for name in [Notification.Name.NSCalendarDayChanged, .NSSystemClockDidChange, .NSSystemTimeZoneDidChange] {
             observers.append(center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated { self?.scheduleRefresh(delay: 0) }
+                MainActor.assumeIsolated {
+                    // Foundation caches TimeZone.current (and so Calendar.current) until told otherwise.
+                    NSTimeZone.resetSystemTimeZone()
+                    self?.scheduleRefresh(delay: 0)
+                }
             })
         }
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(
@@ -260,6 +271,7 @@ final class AppModel {
     }
 
     func save(_ draft: QuickAddDraft, calendarID: String) throws {
+        let draft = draft.normalized(calendar: calendar)
         let title = draft.title.trimmingCharacters(in: .whitespaces)
         switch draft.kind {
         case .event:

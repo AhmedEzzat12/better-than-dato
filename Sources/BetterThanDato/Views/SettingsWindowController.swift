@@ -3,6 +3,7 @@ import SwiftUI
 
 @MainActor
 final class SettingsWindowController {
+    static let windowID = NSUserInterfaceItemIdentifier("BetterThanDatoSettings")
     private var window: NSWindow?
 
     func show(model: AppModel, prefs: PreferencesStore) {
@@ -10,6 +11,7 @@ final class SettingsWindowController {
             let hosting = NSHostingController(rootView: SettingsView().environment(model).environment(prefs))
             let window = NSWindow(contentViewController: hosting)
             window.title = "Better Than Dato Settings"
+            window.identifier = Self.windowID
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.center()

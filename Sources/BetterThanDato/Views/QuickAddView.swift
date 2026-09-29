@@ -153,8 +153,11 @@ struct QuickAddView: View {
         Binding(
             get: { draft.kind },
             set: { kind in
+                // Event calendars and reminder lists are different things; drop a hand-picked one.
                 draft.kind = kind
+                draft.calendarID = nil
                 overridden.insert(.kind)
+                overridden.remove(.calendar)
                 reparse()
             }
         )
@@ -182,7 +185,13 @@ struct QuickAddView: View {
 
     // MARK: - Parsing and saving
 
-    private var resolvedCalendarID: String? { draft.calendarID ?? model.defaultCalendarID(for: draft.kind) }
+    /// The chosen calendar if it can hold this kind of item, else the default.
+    private var resolvedCalendarID: String? {
+        if let chosen = draft.calendarID, model.writableCalendars(for: draft.kind).contains(where: { $0.id == chosen }) {
+            return chosen
+        }
+        return model.defaultCalendarID(for: draft.kind)
+    }
 
     private var canSave: Bool {
         !isSaving && !draft.title.trimmingCharacters(in: .whitespaces).isEmpty && resolvedCalendarID != nil

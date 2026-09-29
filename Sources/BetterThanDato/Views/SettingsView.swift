@@ -1,5 +1,6 @@
 import AppKit
 import Carbon
+import Combine
 import DatoCore
 import SwiftUI
 
@@ -209,11 +210,17 @@ struct ShortcutRecorder: View {
             }
         }
         .onDisappear(perform: stop)
+        // onDisappear doesn't fire when the (retained) Settings window is merely closed.
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { note in
+            if (note.object as? NSWindow)?.identifier == SettingsWindowController.windowID { stop() }
+        }
     }
 
     private func start() {
         recording = true
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            // Only capture keys typed into Settings; never swallow typing in the popover.
+            guard event.window?.identifier == SettingsWindowController.windowID else { return event }
             if event.keyCode == UInt16(kVK_Escape) {
                 stop()
             } else if let newCombo = KeyCombo(event: event) {

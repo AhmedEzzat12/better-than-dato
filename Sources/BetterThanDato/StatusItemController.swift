@@ -31,7 +31,7 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     func show(mode: PopoverMode) {
         guard let button = statusItem.button else { return }
         if !popover.isShown {
-            model.goToToday()
+            model.beginPopoverSession()
             model.scheduleRefresh(delay: 0)
         }
         model.popoverMode = mode
