@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ./scripts/build-app.sh release
-pkill -x BetterThanDato || true
+./scripts/quit-running.sh
 mkdir -p "$HOME/Applications"
 rm -rf "$HOME/Applications/BetterThanDato.app"
 cp -R build/BetterThanDato.app "$HOME/Applications/"

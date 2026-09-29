@@ -2,5 +2,5 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ./scripts/build-app.sh debug
-pkill -x BetterThanDato || true
+./scripts/quit-running.sh
 open build/BetterThanDato.app
