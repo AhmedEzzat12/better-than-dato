@@ -2,14 +2,31 @@ import AppKit
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var statusItem: NSStatusItem?
+    private var prefs: PreferencesStore!
+    private var model: AppModel!
+    private var statusController: StatusItemController!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.image = CalendarIconRenderer.image(day: Calendar.current.component(.day, from: Date()))
-        let menu = NSMenu()
-        menu.addItem(withTitle: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        item.menu = menu
-        statusItem = item
+        prefs = PreferencesStore()
+        model = AppModel(service: CalendarService(), prefs: prefs)
+        statusController = StatusItemController(model: model, prefs: prefs)
+
+        HotKeyCenter.shared.setHandler(for: .quickAdd) { [weak self] in
+            self?.statusController.show(mode: .quickAdd)
+        }
+        HotKeyCenter.shared.setHandler(for: .joinMeeting) { [weak self] in
+            self?.joinCurrentMeeting()
+        }
+        model.applyShortcuts()
+        model.start()
+    }
+
+    private func joinCurrentMeeting() {
+        if let meeting = model.currentMeeting() {
+            model.join(meeting.link)
+        } else {
+            statusController.show(mode: .agenda)
+            model.showToast("No meeting to join")
+        }
     }
 }
