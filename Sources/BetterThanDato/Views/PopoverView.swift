@@ -106,8 +106,3 @@ struct AccountBadgeView: View {
             .background(Capsule().fill(Color.secondary.opacity(0.18)))
     }
 }
-
-// Replaced in Task 11.
-struct QuickAddView: View {
-    var body: some View { Text("Quick add").padding(40) }
-}
