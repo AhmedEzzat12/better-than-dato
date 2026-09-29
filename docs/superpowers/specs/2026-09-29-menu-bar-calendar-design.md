@@ -79,7 +79,7 @@ unit-testable with an injected `now`, `Calendar` and `TimeZone`. The app target 
 | Unit | Responsibility |
 |---|---|
 | `AppDelegate` / `main.swift` | `NSApplication` bootstrap, `.accessory` activation policy (no Dock icon) |
-| `CalendarService` (`@MainActor`) | EventKit authorization, fetch events/reminders for a range, map to DatoCore value types, save event/reminder, toggle reminder completion, observe `EKEventStoreChanged`. Behind protocol `CalendarProviding` so UI can use a fake. |
+| `CalendarService` (`@MainActor`) | The only type importing EventKit: authorization, fetch events/reminders for a range, map to DatoCore value types, save event/reminder, toggle reminder completion, observe `EKEventStoreChanged`. |
 | `AppModel` (`@Observable @MainActor`) | Single source of UI state: accounts, calendars, events, reminders, displayed month, selected day, `now`, auth state, transient toast. Owns refresh scheduling. |
 | `PreferencesStore` (`@Observable`) | UserDefaults-backed settings (see §7) |
 | `StatusItemController` | `NSStatusItem` title/icon rendering, `NSPopover` (transient; `.applicationDefined` when pinned), open modes (agenda / quick add) |
@@ -192,6 +192,8 @@ scrolled to the new item's day.
    and uses the default.
 3. Duration (events): `for 45m`, `45m`, `45 min`, `1h`, `1.5h`, `1h30m`, `90 minutes` → removed from title.
 4. Date/time: `NSDataDetector(.date)`; matched text removed from title. A time range (`2-3pm`) sets the end time.
+   The detector sometimes absorbs title words ("Dinner friday 7pm" is one match), so non-date words are peeled off
+   the match edges while the remaining phrase still resolves to the same date/time.
    The match counts as having a time if the matched text contains a clock time (`\d{1,2}(:\d{2})?\s?(am|pm)`,
    `\d{1,2}:\d{2}`, `noon`, `midnight`); otherwise it is date-only.
 5. Resulting times:
@@ -244,7 +246,8 @@ EventKit source order, then calendar title. Toggle in Settings (default on). Ded
 | Calendar denied / write-only | `PermissionView` explains + "Open System Settings"; menu bar shows icon only |
 | Reminders denied | App works; reminders hidden; footer warning links to Settings → Permissions |
 | No writable calendars | Quick add shows "No writable calendars" and disables Save |
-| Save/complete fails | Inline error in form/row with the EventKit error message; user input kept |
+| Save fails | Inline error in the quick-add form with the EventKit message; user input kept |
+| Reminder complete/undo fails | Toast with the EventKit message; row unchanged |
 | Unmatched `#token` | Form warning, default calendar used |
 | Meeting app launch fails | Fall back to https URL in default browser |
 | Hotkey registration fails (taken) | Settings shows "Shortcut unavailable" next to the recorder |
@@ -255,14 +258,14 @@ No crashes on EventKit returning nil fields (title, calendar, dates): mapping sk
 ## 11. Testing
 
 - **Unit (Swift Testing, `scripts/test.sh`):** all DatoCore units with fixed `now`, `TimeZone` (incl. a DST-change
-  week in `America/New_York`) and `Locale(identifier: "en_US_POSIX")`. Priority cases:
+  month in `America/New_York`) and `Locale(identifier: "en_GB")` (24-hour output). Exception: `QuickAddParser` date
+  tests use `Calendar.current` + `Date()` because `NSDataDetector` resolves "tomorrow" against the real clock. Priority cases:
   - `QuickAddParser`: each rule in §6 incl. `!`, `#` matching precedence, durations, ranges, date-only vs time.
   - `MenuBarTitleFormatter`: every branch of the selection rule, window settings, truncation, declined/cancelled excluded.
   - `AgendaBuilder`: grouping, overdue, ended-today collapse count, ordering, free slots, hidden calendars.
   - `Deduplicator`, `MonthGrid` (Sunday/Monday/Saturday starts, week numbers, 6-row months), `MeetingLinkDetector`
     (each provider + native rewrite), `RelativeTimeFormatter`.
-- **App layer:** `CalendarProviding` fake enables building `AppModel` in tests where practical; EventKit itself is
-  verified manually.
+- **App layer:** thin adapters over DatoCore; verified manually with the QA checklist (EventKit needs a real bundle + TCC).
 - **Manual QA checklist** (kept in `docs/qa-checklist.md`): first-launch permission flow, menu bar title across an
   event's start/end, multiple accounts visible with badges, quick add to a non-default account, reminder complete/undo,
   join via row and hotkey, sleep/wake refresh, month navigation, launch at login.
