@@ -107,11 +107,6 @@ struct AccountBadgeView: View {
     }
 }
 
-// Replaced in Task 10.
-struct AgendaScreen: View {
-    var body: some View { Text("Agenda").padding(40) }
-}
-
 // Replaced in Task 11.
 struct QuickAddView: View {
     var body: some View { Text("Quick add").padding(40) }
