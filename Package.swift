@@ -18,5 +18,12 @@ let package = Package(
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),
         .testTarget(name: "DatoCoreTests", dependencies: ["DatoCore"]),
+        // Renders docs/demo.mp4 (motion graphics driven by DatoCore). Not part of the app.
+        .executableTarget(
+            name: "DemoVideo",
+            dependencies: ["DatoCore"],
+            path: "Tools/DemoVideo",
+            swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
     ]
 )

@@ -6,6 +6,10 @@ A small, native macOS menu bar calendar. It shows your next event at a glance, a
 overview with a merged agenda of every calendar and reminder list on your Mac. Inspired by
 [Dato](https://sindresorhus.com/dato), minus the features I never used.
 
+![Better Than Dato demo: menu bar countdown, month overview, quick add and the full-screen meeting alert](docs/demo.gif)
+
+[Watch the full-quality video](docs/demo.mp4) (32 s, 1080p).
+
 ## Features
 
 - **Menu bar:** today's date icon plus the next event: `Standup · in 12m`, `Focus · 20m left`.
@@ -89,7 +93,12 @@ scripts/update-from-source.sh   # pull, build the latest release, replace the in
 scripts/run.sh          # debug build, relaunches the app from build/
 scripts/install.sh      # release build into ~/Applications (use this for launch at login)
 scripts/test.sh         # unit tests (Swift Testing)
+scripts/make-demo-video.sh      # regenerate docs/demo.mp4 and docs/demo.gif (needs ffmpeg)
 ```
+
+The demo video is motion graphics, not a screen recording: `Tools/DemoVideo` draws each frame in SwiftUI from
+sample data, using the app's real `DatoCore` logic for the menu bar title, month grid, agenda and quick-add
+parsing. No permissions or personal data involved.
 
 On first launch, click the menu bar icon → **Grant Access** and allow Calendars and Reminders.
 
