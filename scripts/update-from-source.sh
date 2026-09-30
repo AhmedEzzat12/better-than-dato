@@ -7,6 +7,8 @@
 #
 # Needs the Command Line Tools (xcode-select --install). Your settings are kept.
 # Source builds don't auto-update; run this again to update.
+# Self-cleaning: it builds in a temporary checkout that is deleted when the script ends — on success,
+# failure or Ctrl-C — so nothing is left in the repo or on disk except the installed app.
 # Optional env:
 #   SIGN_IDENTITY  code-signing certificate name; keeps Calendar/Reminders access across rebuilds
 #                  (otherwise macOS asks again after each rebuild — see README)
@@ -24,7 +26,23 @@ esac
 
 APP="BetterThanDato.app"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/Applications}"
-BUILD_TREE=".build/source-build"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/better-than-dato-build.XXXXXX")"
+BUILD_TREE="$WORK/src"
+
+remove_checkout() {
+  git worktree remove --force "$1" 2>/dev/null || rm -rf "$1"
+}
+cleanup() {
+  remove_checkout "$BUILD_TREE"
+  rm -rf "$WORK"
+  git worktree prune
+}
+trap cleanup EXIT
+
+# Older versions of this script kept a build checkout here; reclaim it.
+if [[ -e .build/source-build ]]; then
+  remove_checkout .build/source-build
+fi
 
 echo "==> Updating from GitHub"
 git fetch --quiet --tags origin
@@ -46,13 +64,9 @@ else
 fi
 echo "==> Building $APP_VERSION from $REF"
 
-# A separate checkout under .build keeps your working copy untouched and the build cache warm.
-if [[ ! -e "$BUILD_TREE/.git" ]]; then
-  git worktree prune
-  git worktree add --quiet --detach "$BUILD_TREE" "$REF"
-else
-  git -C "$BUILD_TREE" checkout --quiet --detach "$REF"
-fi
+# A throwaway checkout keeps your working copy untouched.
+git worktree prune
+git worktree add --quiet --detach "$BUILD_TREE" "$REF"
 
 (
   cd "$BUILD_TREE"

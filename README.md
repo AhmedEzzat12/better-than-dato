@@ -43,8 +43,10 @@ scripts/update-from-source.sh          # latest release
 scripts/update-from-source.sh --main   # or: newest code on main
 ```
 
-It updates the local repo, builds in a separate checkout under `.build/` (your working copy is never
-touched), removes any installed copy, installs the new build into `~/Applications` and opens it. Your
+It updates the local repo, builds in a temporary checkout (your working copy is never touched), removes
+any installed copy, installs the new build into `~/Applications` and opens it. It cleans up after itself —
+the temporary build is deleted even if the build fails or you press Ctrl-C — so each run is a full build
+(about a minute). Your
 settings are kept. Source builds don't update themselves — run the script again to update. Each rebuild is a
 new app to macOS, so it asks for Calendar/Reminders access again unless you set `SIGN_IDENTITY` (see
 [Releasing](#releasing)).
