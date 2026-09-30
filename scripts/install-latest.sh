@@ -32,8 +32,12 @@ if pgrep -x BetterThanDato >/dev/null; then
   for _ in $(seq 50); do pgrep -x BetterThanDato >/dev/null || break; sleep 0.1; done
 fi
 
+# Copy next to the old app first and swap only once the copy succeeded.
+STAGED="$INSTALL_DIR/.$APP.new"
+rm -rf "$STAGED"
+ditto "$WORK/$APP" "$STAGED"
 rm -rf "${INSTALL_DIR:?}/$APP"
-ditto "$WORK/$APP" "$INSTALL_DIR/$APP"
+mv "$STAGED" "$INSTALL_DIR/$APP"
 VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$INSTALL_DIR/$APP/Contents/Info.plist")"
 echo "Installed Better Than Dato $VERSION in $INSTALL_DIR"
 

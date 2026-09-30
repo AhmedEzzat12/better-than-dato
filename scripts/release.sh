@@ -16,6 +16,12 @@ cd "$(dirname "$0")/.."
 VERSION="${1:?Usage: scripts/release.sh <version, e.g. 1.2.0>}"
 TAG="v$VERSION"
 
+if ! command -v gh >/dev/null || ! gh auth status >/dev/null 2>&1; then
+  echo "Install and sign in to the GitHub CLI first: brew install gh && gh auth login" >&2; exit 1
+fi
+if ! git rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
+  echo "This branch has no upstream on GitHub yet; publish the branch first." >&2; exit 1
+fi
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "Commit or stash your changes first." >&2; exit 1
 fi

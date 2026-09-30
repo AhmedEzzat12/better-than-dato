@@ -88,8 +88,12 @@ for dir in /Applications "$HOME/Applications"; do
   fi
 done
 mkdir -p "$INSTALL_DIR"
+# Copy next to the old app first and swap only once the copy succeeded.
+STAGED="$INSTALL_DIR/.$APP.new"
+rm -rf "$STAGED"
+ditto "$BUILD_TREE/build/$APP" "$STAGED"
 rm -rf "${INSTALL_DIR:?}/$APP"
-ditto "$BUILD_TREE/build/$APP" "$INSTALL_DIR/$APP"
+mv "$STAGED" "$INSTALL_DIR/$APP"
 echo "    installed $INSTALL_DIR/$APP ($APP_VERSION)"
 
 if [[ "${NO_LAUNCH:-0}" != "1" ]]; then

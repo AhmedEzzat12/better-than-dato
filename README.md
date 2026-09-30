@@ -49,7 +49,8 @@ scripts/update-from-source.sh          # latest release
 scripts/update-from-source.sh --main   # or: newest code on main
 ```
 
-It updates the local repo, builds in a temporary checkout (your working copy is never touched), removes
+It fast-forwards your local `main` if it's clean (otherwise leaves your working copy alone), builds in a
+temporary checkout, removes
 any installed copy, installs the new build into `~/Applications` and opens it. It cleans up after itself —
 the temporary build is deleted even if the build fails or you press Ctrl-C — so each run is a full build
 (about a minute). Your
