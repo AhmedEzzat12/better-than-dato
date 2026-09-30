@@ -24,13 +24,35 @@ overview with a merged agenda of every calendar and reminder list on your Mac. I
 
 ## Install
 
-1. Download `BetterThanDato-<version>.zip` from the [latest release](../../releases/latest) and move the app
-   to Applications.
-2. The app isn't notarized by Apple, so the first launch is blocked: open **System Settings → Privacy &
-   Security**, scroll down and click **Open Anyway**. You only do this once.
-3. Click the menu bar icon → **Grant Access**.
+**Recommended** — one command in Terminal installs the latest release into Applications and opens it:
 
-After that the app updates itself (Settings → General → Updates).
+```bash
+curl -fsSL https://raw.githubusercontent.com/AhmedEzzat12/better-than-dato/main/scripts/install-latest.sh | bash
+```
+
+Run the same command again any time to reinstall. After that the app updates itself
+(Settings → General → Updates). Then click the calendar icon in the menu bar → **Grant Access**.
+
+**Or download manually:** get `BetterThanDato.zip` from the [latest release](../../releases/latest), unzip it and
+move `BetterThanDato.app` to Applications. The first launch will be blocked — see below.
+
+### "BetterThanDato.app" Not Opened / "Apple could not verify…"
+
+The app is free and open source but not notarized by Apple (that needs a paid developer account), so macOS
+blocks copies downloaded in a browser. Any **one** of these fixes it, and you only need it once — updates
+installed by the app itself aren't blocked:
+
+1. **System Settings:** click **Done** on the warning, open **System Settings → Privacy & Security**, scroll to
+   *Security*, click **Open Anyway** next to "BetterThanDato.app was blocked", and confirm with your password.
+2. **Terminal:** remove the download's quarantine flag, then open the app normally:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/BetterThanDato.app
+   ```
+3. **Reinstall with the one-command installer above** — `curl` downloads aren't quarantined, so the warning never
+   appears.
+
+If **Open Anyway** is missing or *Allow applications from* says "configured by a profile", your Mac is managed
+by an organization; options 2 and 3 still work unless the administrator blocks unsigned apps entirely.
 
 ## Requirements
 

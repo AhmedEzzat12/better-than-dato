@@ -36,7 +36,8 @@ export BUILD_NUMBER="$(git rev-list --count HEAD)"
 
 scripts/test.sh
 scripts/build-app.sh release
-ZIP="build/BetterThanDato-$VERSION.zip"
+# Stable asset name so releases/latest/download/BetterThanDato.zip always points at the newest build.
+ZIP="build/BetterThanDato.zip"
 rm -f "$ZIP"
 ditto -c -k --sequesterRsrc --keepParent build/BetterThanDato.app "$ZIP"
 scripts/make-appcast.sh "$VERSION" "$BUILD_NUMBER" "$ZIP"
