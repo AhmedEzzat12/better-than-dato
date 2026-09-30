@@ -36,6 +36,18 @@ Run `scripts/run.sh` (or `scripts/install.sh` for launch-at-login checks).
 - [ ] Zoom/Meet/Teams event within 15 minutes shows "Join"; Zoom opens in the Zoom app if installed.
 - [ ] ⌥⌘J joins the current meeting; with none, the popover shows "No meeting to join".
 
+## Meeting alerts
+- [ ] Settings → General → Meeting alerts → Preview alert: covers every screen, Return joins, Esc dismisses.
+- [ ] A real meeting fires the alert at its start (or the chosen lead time); only once per meeting.
+- [ ] "Only for events with a video call link" skips events without one; turning alerts off stops them.
+- [ ] The alert appears over a full-screen app.
+
+## Appearance and updates
+- [ ] Settings → Appearance slider moves the popover from system glass to solid.
+- [ ] Overdue reminders are readable on a busy background (red badge, neutral date).
+- [ ] A build from `scripts/release.sh` shows "Check for Updates…"; a local build shows the GitHub note.
+- [ ] Install release N, publish N+1, Check for Updates installs and relaunches it.
+
 ## System
 - [ ] Sleep/wake refreshes the title.
 - [ ] Changing the time zone refreshes times.

@@ -23,6 +23,7 @@ struct GeneralSettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var launchAtLogin = LoginItem.isEnabled
     @State private var loginError: String?
+    @State private var autoUpdate = false
 
     var body: some View {
         @Bindable var prefs = prefs
@@ -68,6 +69,21 @@ struct GeneralSettingsView: View {
                 Button("Preview alert") { model.previewMeetingAlert() }
             }
 
+            Section("Updates") {
+                LabeledContent("Version", value: model.updater.version)
+                if model.updater.isEnabled {
+                    Toggle("Check for updates automatically", isOn: Binding(
+                        get: { autoUpdate },
+                        set: { autoUpdate = $0; model.updater.automaticallyChecks = $0 }
+                    ))
+                    Button("Check for Updates…") { model.updater.checkForUpdates() }
+                } else {
+                    Text("Updates are available in builds downloaded from GitHub Releases.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
             Section("Appearance") {
                 Slider(value: $prefs.popoverOpacity, in: 0...1, step: 0.05) {
                     Text("Popover background")
@@ -86,6 +102,7 @@ struct GeneralSettingsView: View {
         .formStyle(.grouped)
         .onChange(of: prefs.meetingAlertSettings) { model.rescheduleMeetingAlerts() }
         .onChange(of: prefs.meetingAlertsEnabled) { model.rescheduleMeetingAlerts() }
+        .onAppear { autoUpdate = model.updater.automaticallyChecks }
     }
 
     static let halfHours = Array(stride(from: 0, through: 24 * 60, by: 30))

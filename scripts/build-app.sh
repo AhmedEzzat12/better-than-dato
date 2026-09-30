@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Builds BetterThanDato and assembles a signed .app bundle in build/.
 # Usage: scripts/build-app.sh [debug|release]
+# Optional env: APP_VERSION (e.g. 1.2.0), BUILD_NUMBER (must increase for Sparkle),
+#               SPARKLE_PUBLIC_KEY (turns on auto-updates), SIGN_IDENTITY (default: ad-hoc).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source scripts/sdk-env.sh
@@ -22,7 +24,24 @@ BIN_DIR="$(swift build -c "$CONFIG" $ARCH_FLAGS --show-bin-path)"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/$NAME" "$APP/Contents/MacOS/$NAME"
-cp Resources/Info.plist "$APP/Contents/Info.plist"
+PLIST="$APP/Contents/Info.plist"
+cp Resources/Info.plist "$PLIST"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
-codesign --force --sign "${SIGN_IDENTITY:--}" "$APP"
+if [[ -n "${APP_VERSION:-}" ]]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" "$PLIST"
+fi
+if [[ -n "${BUILD_NUMBER:-}" ]]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$PLIST"
+fi
+if [[ -n "${SPARKLE_PUBLIC_KEY:-}" ]]; then
+  /usr/libexec/PlistBuddy -c "Add :SUPublicEDKey string $SPARKLE_PUBLIC_KEY" "$PLIST"
+fi
+
+# Embed Sparkle (the binary's rpath points at Contents/Frameworks).
+SPARKLE_FRAMEWORK="$(find "$BIN_DIR" -maxdepth 2 -name Sparkle.framework -type d | head -1)"
+mkdir -p "$APP/Contents/Frameworks"
+ditto "$SPARKLE_FRAMEWORK" "$APP/Contents/Frameworks/Sparkle.framework"
+
+# --deep also signs Sparkle's helpers (Autoupdate, Updater.app, XPC services) with the same identity.
+codesign --force --deep --sign "${SIGN_IDENTITY:--}" "$APP"
 echo "Built $APP"

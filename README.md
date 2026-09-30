@@ -17,8 +17,20 @@ overview with a merged agenda of every calendar and reminder list on your Mac. I
 - **Reminders:** due and overdue reminders sit in the agenda; tick them off in place (with a 2-second undo).
 - **Meetings:** a Join button for Zoom, Google Meet, Teams, Webex, FaceTime and Slack links; ⌥⌘J joins the
   current meeting, opening Zoom/Teams in their desktop apps when installed.
+- **Full-screen meeting alerts:** when a meeting starts (or 1/2/5 minutes before), an alert covers every
+  screen with a big Join button — Return joins, Esc dismisses. Optional, with a video-calls-only filter.
 - **Also:** hides the same meeting invited to two accounts, shows free time between today's meetings,
-  keyboard navigation, launch at login.
+  keyboard navigation, adjustable popover opacity over the macOS glass, launch at login, automatic updates.
+
+## Install
+
+1. Download `BetterThanDato-<version>.zip` from the [latest release](../../releases/latest) and move the app
+   to Applications.
+2. The app isn't notarized by Apple, so the first launch is blocked: open **System Settings → Privacy &
+   Security**, scroll down and click **Open Anyway**. You only do this once.
+3. Click the menu bar icon → **Grant Access**.
+
+After that the app updates itself (Settings → General → Updates).
 
 ## Requirements
 
@@ -40,6 +52,28 @@ On first launch, click the menu bar icon → **Grant Access** and allow Calendar
 > The app is ad-hoc signed, so macOS treats every rebuild as a new app and may ask for Calendar/Reminders
 > access again. To avoid that, create a code-signing certificate in Keychain Access and build with
 > `SIGN_IDENTITY="<certificate name>" scripts/install.sh`.
+
+## Releasing
+
+Releases are built and published from your Mac — no CI, nothing to pay for:
+
+```bash
+scripts/release.sh 1.2.0
+```
+
+It runs the tests, builds the universal app, signs the update with your Sparkle key (kept in the login
+keychain, created on first run), writes `appcast.xml`, and creates GitHub release `v1.2.0` with both files.
+Installed copies read `releases/latest/download/appcast.xml` and offer the update. Commit and push first;
+the script refuses to release unpushed code.
+
+- **Back up the signing key** once: `.build/sparkle-tools/*/bin/generate_keys -x ~/sparkle-key.txt`, then
+  store it in a password manager. Without it, installed copies can't verify future updates.
+- **Fewer permission prompts:** ad-hoc signed updates look like a new app to macOS, which asks for
+  Calendar/Reminders access again. Create a code-signing certificate once (Keychain Access → Certificate
+  Assistant → Create a Certificate → type *Code Signing*) and release with
+  `SIGN_IDENTITY="<certificate name>" scripts/release.sh 1.2.0`. An Apple Developer ID ($99/year) would also
+  remove the first-launch Gatekeeper step.
+- The repository must be **public** for others to download releases and for updates to reach them.
 
 ## Quick add syntax
 

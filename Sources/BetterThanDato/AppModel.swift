@@ -14,6 +14,7 @@ enum PopoverMode {
 final class AppModel {
     @ObservationIgnored let service: CalendarService
     @ObservationIgnored let prefs: PreferencesStore
+    @ObservationIgnored let updater = UpdaterService()
     @ObservationIgnored var onOpenSettings: (() -> Void)?
     /// Called with the meetings whose full-screen alert is due.
     @ObservationIgnored var onMeetingAlert: (([CalendarEvent]) -> Void)?

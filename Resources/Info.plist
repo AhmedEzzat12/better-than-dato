@@ -26,6 +26,10 @@
     <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>SUFeedURL</key>
+    <string>https://github.com/AhmedEzzat12/better-than-dato/releases/latest/download/appcast.xml</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
     <key>NSCalendarsFullAccessUsageDescription</key>
     <string>Better Than Dato shows your upcoming events in the menu bar and lets you add new ones.</string>
     <key>NSCalendarsUsageDescription</key>
