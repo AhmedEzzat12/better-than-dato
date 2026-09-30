@@ -27,6 +27,10 @@ final class PreferencesStore {
         static let lastReminderListID = "lastReminderListID"
         static let quickAddShortcut = "quickAddShortcut"
         static let joinMeetingShortcut = "joinMeetingShortcut"
+        static let meetingAlertsEnabled = "meetingAlertsEnabled"
+        static let meetingAlertLeadMinutes = "meetingAlertLeadMinutes"
+        static let meetingAlertsVideoOnly = "meetingAlertsVideoOnly"
+        static let popoverOpacity = "popoverOpacity"
     }
 
     var showNextEvent: Bool { didSet { defaults.set(showNextEvent, forKey: Key.showNextEvent) } }
@@ -49,6 +53,12 @@ final class PreferencesStore {
     var lastReminderListID: String? { didSet { defaults.set(lastReminderListID, forKey: Key.lastReminderListID) } }
     var quickAddShortcut: KeyCombo? { didSet { Self.saveCombo(quickAddShortcut, Key.quickAddShortcut, defaults) } }
     var joinMeetingShortcut: KeyCombo? { didSet { Self.saveCombo(joinMeetingShortcut, Key.joinMeetingShortcut, defaults) } }
+    var meetingAlertsEnabled: Bool { didSet { defaults.set(meetingAlertsEnabled, forKey: Key.meetingAlertsEnabled) } }
+    /// 0 = when the meeting starts; otherwise minutes before.
+    var meetingAlertLeadMinutes: Int { didSet { defaults.set(meetingAlertLeadMinutes, forKey: Key.meetingAlertLeadMinutes) } }
+    var meetingAlertsVideoOnly: Bool { didSet { defaults.set(meetingAlertsVideoOnly, forKey: Key.meetingAlertsVideoOnly) } }
+    /// 0 = macOS's own glass popover; 1 = fully solid window background.
+    var popoverOpacity: Double { didSet { defaults.set(popoverOpacity, forKey: Key.popoverOpacity) } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -70,9 +80,17 @@ final class PreferencesStore {
         lastReminderListID = defaults.string(forKey: Key.lastReminderListID)
         quickAddShortcut = Self.loadCombo(Key.quickAddShortcut, defaults, fallback: .quickAddDefault)
         joinMeetingShortcut = Self.loadCombo(Key.joinMeetingShortcut, defaults, fallback: .joinMeetingDefault)
+        meetingAlertsEnabled = defaults.object(forKey: Key.meetingAlertsEnabled) as? Bool ?? true
+        meetingAlertLeadMinutes = defaults.object(forKey: Key.meetingAlertLeadMinutes) as? Int ?? 0
+        meetingAlertsVideoOnly = defaults.object(forKey: Key.meetingAlertsVideoOnly) as? Bool ?? false
+        popoverOpacity = defaults.object(forKey: Key.popoverOpacity) as? Double ?? 0
     }
 
     var workingHours: WorkingHours { WorkingHours(startMinutes: workingHoursStart, endMinutes: workingHoursEnd) }
+
+    var meetingAlertSettings: MeetingAlertSettings {
+        MeetingAlertSettings(leadMinutes: meetingAlertLeadMinutes, onlyWithVideoLink: meetingAlertsVideoOnly)
+    }
 
     func badge(for account: AccountInfo) -> String {
         if let custom = accountBadges[account.id], !custom.isEmpty { return custom }

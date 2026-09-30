@@ -20,10 +20,14 @@ struct ReminderRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 if let when = whenText {
-                    Text(when)
-                        .font(.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(showDate ? Color.red : Color.secondary)
+                    // Red text on glass is hard to read; overdue gets a red icon, the date stays neutral.
+                    HStack(spacing: 4) {
+                        if showDate {
+                            Image(systemName: "clock.fill").foregroundStyle(Color.red)
+                        }
+                        Text(when).monospacedDigit().foregroundStyle(.secondary)
+                    }
+                    .font(.caption)
                 }
                 Text(item.title)
                     .strikethrough(item.isCompleted)

@@ -14,12 +14,13 @@ struct SettingsView: View {
             ShortcutsSettingsView().tabItem { Label("Shortcuts", systemImage: "keyboard") }
             PermissionsSettingsView().tabItem { Label("Permissions", systemImage: "lock") }
         }
-        .frame(width: 500, height: 440)
+        .frame(width: 500, height: 520)
     }
 }
 
 struct GeneralSettingsView: View {
     @Environment(PreferencesStore.self) private var prefs
+    @Environment(AppModel.self) private var model
     @State private var launchAtLogin = LoginItem.isEnabled
     @State private var loginError: String?
 
@@ -52,8 +53,39 @@ struct GeneralSettingsView: View {
                     ForEach(Self.halfHours, id: \.self) { Text(Self.label($0)).tag($0) }
                 }
             }
+
+            Section("Meeting alerts") {
+                Toggle("Full-screen alert when a meeting starts", isOn: $prefs.meetingAlertsEnabled)
+                Picker("Show it", selection: $prefs.meetingAlertLeadMinutes) {
+                    Text("When it starts").tag(0)
+                    Text("1 minute before").tag(1)
+                    Text("2 minutes before").tag(2)
+                    Text("5 minutes before").tag(5)
+                }
+                .disabled(!prefs.meetingAlertsEnabled)
+                Toggle("Only for events with a video call link", isOn: $prefs.meetingAlertsVideoOnly)
+                    .disabled(!prefs.meetingAlertsEnabled)
+                Button("Preview alert") { model.previewMeetingAlert() }
+            }
+
+            Section("Appearance") {
+                Slider(value: $prefs.popoverOpacity, in: 0...1, step: 0.05) {
+                    Text("Popover background")
+                } minimumValueLabel: {
+                    Text("Glass")
+                } maximumValueLabel: {
+                    Text("Solid")
+                }
+                Text(prefs.popoverOpacity == 0
+                     ? "System glass (default)"
+                     : "\(Int((prefs.popoverOpacity * 100).rounded()))% opaque")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
+        .onChange(of: prefs.meetingAlertSettings) { model.rescheduleMeetingAlerts() }
+        .onChange(of: prefs.meetingAlertsEnabled) { model.rescheduleMeetingAlerts() }
     }
 
     static let halfHours = Array(stride(from: 0, through: 24 * 60, by: 30))

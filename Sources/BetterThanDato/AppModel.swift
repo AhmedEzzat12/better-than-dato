@@ -15,6 +15,8 @@ final class AppModel {
     @ObservationIgnored let service: CalendarService
     @ObservationIgnored let prefs: PreferencesStore
     @ObservationIgnored var onOpenSettings: (() -> Void)?
+    /// Called with the meetings whose full-screen alert is due.
+    @ObservationIgnored var onMeetingAlert: (([CalendarEvent]) -> Void)?
 
     private(set) var accounts: [AccountInfo] = []
     private(set) var calendars: [CalendarInfo] = [] {
@@ -53,6 +55,8 @@ final class AppModel {
     @ObservationIgnored private var toastTask: Task<Void, Never>?
     @ObservationIgnored private var completionTokens: [String: UUID] = [:]
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
+    @ObservationIgnored private var alertTask: Task<Void, Never>?
+    @ObservationIgnored private var alertedEventIDs: Set<String> = []
 
     init(service: CalendarService, prefs: PreferencesStore) {
         self.service = service
@@ -101,6 +105,8 @@ final class AppModel {
         let interval = fetchInterval
         events = service.events(in: interval)
         reminders = await service.reminders(dueBefore: interval.end)
+        alertedEventIDs.formIntersection(events.map(\.id))
+        rescheduleMeetingAlerts()
     }
 
     func requestAccess() async {
@@ -117,6 +123,7 @@ final class AppModel {
                 try? await Task.sleep(for: .seconds(nextMinute - current + 0.05))
                 guard let self else { return }
                 self.now = Date()
+                self.rescheduleMeetingAlerts()
             }
         }
     }
@@ -296,6 +303,40 @@ final class AppModel {
             }
         }
         return nil
+    }
+
+    // MARK: - Meeting alerts
+
+    /// Fires any alert that is due now, then sleeps until the next one. Called after every refresh,
+    /// minute tick and settings change, so the plan always reflects the latest events.
+    func rescheduleMeetingAlerts() {
+        alertTask?.cancel()
+        guard prefs.meetingAlertsEnabled, eventAccess == .granted else { return }
+        let settings = prefs.meetingAlertSettings
+        let due = MeetingAlertPlanner.dueAlerts(events: visibleEvents, now: Date(), settings: settings, alreadyAlerted: alertedEventIDs)
+        if !due.isEmpty {
+            alertedEventIDs.formUnion(due.map(\.id))
+            onMeetingAlert?(due)
+        }
+        guard let next = MeetingAlertPlanner.nextAlertDate(
+            events: visibleEvents, now: Date(), settings: settings, alreadyAlerted: alertedEventIDs
+        ) else { return }
+        alertTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(max(0, next.timeIntervalSinceNow) + 0.05))
+            guard !Task.isCancelled else { return }
+            self?.rescheduleMeetingAlerts()
+        }
+    }
+
+    /// Shows the alert for the next upcoming meeting (or a sample) so the look can be checked from Settings.
+    func previewMeetingAlert() {
+        let upcoming = visibleEvents.first { !$0.isAllDay && $0.end > now }
+        let sample = CalendarEvent(
+            id: "preview", title: "Design review", start: now, end: now.addingTimeInterval(30 * 60),
+            calendarID: writableCalendars(for: .event).first?.id ?? "preview",
+            location: "https://meet.google.com/abc-defg-hij"
+        )
+        onMeetingAlert?([upcoming ?? sample])
     }
 
     func join(_ link: MeetingLink) {

@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var model: AppModel!
     private var statusController: StatusItemController!
     private let settingsWindow = SettingsWindowController()
+    private let meetingAlert = MeetingAlertWindowController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         installMainMenu()
@@ -14,6 +15,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusController = StatusItemController(model: model, prefs: prefs)
 
         model.onOpenSettings = { [weak self] in self?.showSettings() }
+        model.onMeetingAlert = { [weak self] events in
+            guard let self else { return }
+            self.meetingAlert.show(events, model: self.model)
+        }
         HotKeyCenter.shared.setHandler(for: .quickAdd) { [weak self] in
             self?.statusController.show(mode: .quickAdd)
         }

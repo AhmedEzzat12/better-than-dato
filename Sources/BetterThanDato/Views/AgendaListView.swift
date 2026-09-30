@@ -57,9 +57,12 @@ struct DayContentView: View {
         if !day.overdue.isEmpty {
             Text("Overdue")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.red)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Capsule().fill(Color.red))
                 .padding(.horizontal, 12)
-                .padding(.top, 4)
+                .padding(.top, 6)
             ForEach(day.overdue) { ReminderRowView(item: $0, showDate: true) }
         }
         if !day.earlierEvents.isEmpty {
