@@ -30,7 +30,6 @@ final class PreferencesStore {
         static let meetingAlertsEnabled = "meetingAlertsEnabled"
         static let meetingAlertLeadMinutes = "meetingAlertLeadMinutes"
         static let meetingAlertsVideoOnly = "meetingAlertsVideoOnly"
-        static let popoverOpacity = "popoverOpacity"
     }
 
     var showNextEvent: Bool { didSet { defaults.set(showNextEvent, forKey: Key.showNextEvent) } }
@@ -57,8 +56,6 @@ final class PreferencesStore {
     /// 0 = when the meeting starts; otherwise minutes before.
     var meetingAlertLeadMinutes: Int { didSet { defaults.set(meetingAlertLeadMinutes, forKey: Key.meetingAlertLeadMinutes) } }
     var meetingAlertsVideoOnly: Bool { didSet { defaults.set(meetingAlertsVideoOnly, forKey: Key.meetingAlertsVideoOnly) } }
-    /// 0 = macOS's own glass popover; 1 = fully solid window background.
-    var popoverOpacity: Double { didSet { defaults.set(popoverOpacity, forKey: Key.popoverOpacity) } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -83,7 +80,6 @@ final class PreferencesStore {
         meetingAlertsEnabled = defaults.object(forKey: Key.meetingAlertsEnabled) as? Bool ?? true
         meetingAlertLeadMinutes = defaults.object(forKey: Key.meetingAlertLeadMinutes) as? Int ?? 0
         meetingAlertsVideoOnly = defaults.object(forKey: Key.meetingAlertsVideoOnly) as? Bool ?? false
-        popoverOpacity = defaults.object(forKey: Key.popoverOpacity) as? Double ?? 0
     }
 
     var workingHours: WorkingHours { WorkingHours(startMinutes: workingHoursStart, endMinutes: workingHoursEnd) }

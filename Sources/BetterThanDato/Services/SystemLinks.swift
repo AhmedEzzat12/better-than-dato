@@ -12,6 +12,16 @@ enum SystemSettingsLink {
     }
 }
 
+/// macOS's own transparency controls; the popover's Liquid Glass follows them (apps can't change it).
+enum AppearanceSettingsLink {
+    static func openAppearance() { open("x-apple.systempreferences:com.apple.Appearance-Settings.extension") }
+    static func openAccessibilityDisplay() { open("x-apple.systempreferences:com.apple.Accessibility-Settings.extension?Display") }
+
+    private static func open(_ string: String) {
+        if let url = URL(string: string) { NSWorkspace.shared.open(url) }
+    }
+}
+
 enum CalendarAppLauncher {
     /// Opens the event in Calendar.app (undocumented ical:// scheme), falling back to just launching Calendar.
     static func open(eventIdentifier: String) {

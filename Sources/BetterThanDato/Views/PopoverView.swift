@@ -3,7 +3,6 @@ import SwiftUI
 
 struct PopoverView: View {
     @Environment(AppModel.self) private var model
-    @Environment(PreferencesStore.self) private var prefs
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,8 +18,6 @@ struct PopoverView: View {
         }
         .id(model.popoverSession)
         .frame(width: 360)
-        // macOS 26+ draws popovers in Liquid Glass; this optional layer makes it more opaque.
-        .background(Color(nsColor: .windowBackgroundColor).opacity(prefs.popoverOpacity))
         .overlay(alignment: .bottom) {
             if let toast = model.toast {
                 ToastView(text: toast).padding(.bottom, 44)

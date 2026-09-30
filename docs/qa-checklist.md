@@ -43,7 +43,7 @@ Run `scripts/run.sh` (or `scripts/install.sh` for launch-at-login checks).
 - [ ] The alert appears over a full-screen app.
 
 ## Appearance and updates
-- [ ] Settings → Appearance slider moves the popover from system glass to solid.
+- [ ] Settings → Appearance buttons open System Settings; Reduce Transparency makes the popover opaque.
 - [ ] Overdue reminders are readable on a busy background (red badge, neutral date).
 - [ ] A build from `scripts/release.sh` shows "Check for Updates…"; a local build shows the GitHub note.
 - [ ] Install release N, publish N+1, Check for Updates installs and relaunches it.

@@ -20,7 +20,9 @@ overview with a merged agenda of every calendar and reminder list on your Mac. I
 - **Full-screen meeting alerts:** when a meeting starts (or 1/2/5 minutes before), an alert covers every
   screen with a big Join button — Return joins, Esc dismisses. Optional, with a video-calls-only filter.
 - **Also:** hides the same meeting invited to two accounts, shows free time between today's meetings,
-  keyboard navigation, adjustable popover opacity over the macOS glass, launch at login, automatic updates.
+  keyboard navigation, launch at login, automatic updates. The popover uses macOS's native Liquid Glass; to make
+  it more opaque use *System Settings → Accessibility → Display → Reduce Transparency* (or the Liquid Glass
+  option in *Appearance* where available).
 
 ## Install
 

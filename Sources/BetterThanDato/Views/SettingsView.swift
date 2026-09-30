@@ -85,18 +85,15 @@ struct GeneralSettingsView: View {
             }
 
             Section("Appearance") {
-                Slider(value: $prefs.popoverOpacity, in: 0...1, step: 0.05) {
-                    Text("Popover background")
-                } minimumValueLabel: {
-                    Text("Glass")
-                } maximumValueLabel: {
-                    Text("Solid")
-                }
-                Text(prefs.popoverOpacity == 0
-                     ? "System glass (default)"
-                     : "\(Int((prefs.popoverOpacity * 100).rounded()))% opaque")
-                    .font(.caption)
+                Text("The popover uses macOS's Liquid Glass, which apps can't adjust. To make it more opaque, "
+                     + "turn on Reduce Transparency, or choose Tinted for Liquid Glass in Appearance settings "
+                     + "(on macOS versions that offer it).")
+                    .font(.callout)
                     .foregroundStyle(.secondary)
+                HStack {
+                    Button("Accessibility → Display…") { AppearanceSettingsLink.openAccessibilityDisplay() }
+                    Button("Appearance…") { AppearanceSettingsLink.openAppearance() }
+                }
             }
         }
         .formStyle(.grouped)
