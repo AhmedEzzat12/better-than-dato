@@ -33,6 +33,22 @@ curl -fsSL https://raw.githubusercontent.com/AhmedEzzat12/better-than-dato/main/
 Run the same command again any time to reinstall. After that the app updates itself
 (Settings → General → Updates). Then click the calendar icon in the menu bar → **Grant Access**.
 
+**Or build from source** — for Macs where downloaded apps are blocked by an organization's profile, or to
+run unreleased changes. Needs the Command Line Tools (`xcode-select --install`):
+
+```bash
+git clone https://github.com/AhmedEzzat12/better-than-dato.git
+cd better-than-dato
+scripts/update-from-source.sh          # latest release
+scripts/update-from-source.sh --main   # or: newest code on main
+```
+
+It updates the local repo, builds in a separate checkout under `.build/` (your working copy is never
+touched), removes any installed copy, installs the new build into `~/Applications` and opens it. Your
+settings are kept. Source builds don't update themselves — run the script again to update. Each rebuild is a
+new app to macOS, so it asks for Calendar/Reminders access again unless you set `SIGN_IDENTITY` (see
+[Releasing](#releasing)).
+
 **Or download manually:** get `BetterThanDato.zip` from the [latest release](../../releases/latest), unzip it and
 move `BetterThanDato.app` to Applications. The first launch will be blocked — see below.
 
@@ -52,7 +68,8 @@ installed by the app itself aren't blocked:
    appears.
 
 If **Open Anyway** is missing or *Allow applications from* says "configured by a profile", your Mac is managed
-by an organization; options 2 and 3 still work unless the administrator blocks unsigned apps entirely.
+by an organization; options 2 and 3 still work unless the administrator blocks unsigned apps entirely. If they
+don't, [build from source](#install) with `scripts/update-from-source.sh`.
 
 ## Requirements
 
@@ -64,6 +81,7 @@ by an organization; options 2 and 3 still work unless the administrator blocks u
 ## Build and run
 
 ```bash
+scripts/update-from-source.sh   # pull, build the latest release, replace the installed app
 scripts/run.sh          # debug build, relaunches the app from build/
 scripts/install.sh      # release build into ~/Applications (use this for launch at login)
 scripts/test.sh         # unit tests (Swift Testing)

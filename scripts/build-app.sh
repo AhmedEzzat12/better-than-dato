@@ -2,7 +2,8 @@
 # Builds BetterThanDato and assembles a signed .app bundle in build/.
 # Usage: scripts/build-app.sh [debug|release]
 # Optional env: APP_VERSION (e.g. 1.2.0), BUILD_NUMBER (must increase for Sparkle),
-#               SPARKLE_PUBLIC_KEY (turns on auto-updates), SIGN_IDENTITY (default: ad-hoc).
+#               SPARKLE_PUBLIC_KEY (turns on auto-updates), SIGN_IDENTITY (default: ad-hoc),
+#               UNIVERSAL=0 (release build for this Mac's architecture only).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source scripts/sdk-env.sh
@@ -13,7 +14,7 @@ APP="build/$NAME.app"
 # Release builds are universal: macOS 26 is the last release for Intel Macs, so ship an x86_64 slice too.
 # Debug builds stay host-only for speed.
 ARCH_FLAGS=""
-if [[ "$CONFIG" == "release" ]]; then
+if [[ "$CONFIG" == "release" && "${UNIVERSAL:-1}" == "1" ]]; then
   ARCH_FLAGS="--arch arm64 --arch x86_64"
 fi
 # shellcheck disable=SC2086 # ARCH_FLAGS is intentionally word-split
