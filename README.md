@@ -156,15 +156,14 @@ put while you keep typing.
 
 Global shortcuts can be changed in Settings → Shortcuts.
 
-## Project layout
+## Documentation
 
-```
-Sources/DatoCore/        Pure Swift logic (menu bar title, agenda, month grid, quick-add parser, meeting links)
-Sources/BetterThanDato/  AppKit status item, SwiftUI popover and settings, EventKit adapter
-Tests/DatoCoreTests/     Unit tests for DatoCore
-scripts/                 Build, run, install, test, and icon generation
-docs/                    Design spec, implementation plan, QA checklist
-```
+- **[How it works](docs/ARCHITECTURE.md)**: the two layers, data flow, and how each feature works under the hood.
+- **[Developer guide](docs/DEVELOPMENT.md)**: setup, scripts, toolchain notes, debugging, and step-by-step tutorials
+  for extending the app.
+- **[Contributing](CONTRIBUTING.md)**: how to report bugs, propose features and send pull requests.
+- **[QA checklist](docs/qa-checklist.md)**: what to click through before a release.
 
-All decisions the UI shows are made in `DatoCore`, which only depends on Foundation, so they're unit-tested
-without EventKit. The app target is a thin layer that reads EventKit and renders.
+In short: every decision the UI shows (menu bar title, agenda, quick-add parsing, meeting alerts) lives in
+`Sources/DatoCore`, which only depends on Foundation and is unit-tested. `Sources/BetterThanDato` is a thin layer
+that reads EventKit and renders.
