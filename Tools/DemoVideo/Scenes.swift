@@ -75,7 +75,8 @@ struct EndCard: View {
                 Text("Better Than Dato").font(.system(size: 70, weight: .bold))
                 Text("Free and open source · macOS 14 and later")
                     .font(.system(size: 30, weight: .medium)).opacity(0.85)
-                Text("curl -fsSL https://raw.githubusercontent.com/AhmedEzzat12/better-than-dato/main/scripts/install-latest.sh | bash")
+                // verbatim: a plain string literal is Markdown, which would turn the URL into a blue link.
+                Text(verbatim: "curl -fsSL https://raw.githubusercontent.com/AhmedEzzat12/better-than-dato/main/scripts/install-latest.sh | bash")
                     .font(.system(size: 19, design: .monospaced))
                     .padding(.horizontal, 24).padding(.vertical, 14)
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color.black.opacity(0.3)))
@@ -128,6 +129,13 @@ struct DesktopScene: View {
                 MenuBarCallout(t: t, story: story)
                 if t >= Timeline.popoverIn - 0.05 && t < Timeline.alertIn + 0.1 {
                     PopoverMock(t: t, story: story)
+                }
+                let settings = window(t, Timeline.settingsIn, Timeline.settingsOut, fade: 0.35)
+                if settings > 0 {
+                    SettingsMock(t: t, story: story)
+                        .scaleEffect(1.45 * (0.94 + 0.06 * settings))
+                        .opacity(settings)
+                        .frame(width: canvas.width, height: canvas.height)
                 }
             }
             .blur(radius: 24 * alert)
@@ -647,11 +655,7 @@ struct QuickAddPanel: View {
                 }
                 GridRow {
                     label("All day")
-                    Capsule().fill(draft.isAllDay ? Color.green : Color.black.opacity(0.15))
-                        .frame(width: 30, height: 18)
-                        .overlay(alignment: draft.isAllDay ? .trailing : .leading) {
-                            Circle().fill(Color.white).frame(width: 14).padding(2)
-                        }
+                    ToggleMock(on: draft.isAllDay ? 1 : 0)
                 }
                 GridRow {
                     label("Starts")
@@ -698,6 +702,153 @@ struct QuickAddPanel: View {
             .font(.system(size: 12, weight: on ? .semibold : .regular))
             .padding(.horizontal, 14).padding(.vertical, 4)
             .background(RoundedRectangle(cornerRadius: 5).fill(on ? Color.white : Color.clear).padding(2))
+    }
+}
+
+struct ToggleMock: View {
+    /// 0 = off, 1 = on; values in between animate the switch.
+    let on: Double
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            Capsule().fill(Color.black.opacity(0.15))
+            Capsule().fill(Color(hex: 0x34C759)).opacity(on)
+            Circle().fill(Color.white).frame(width: 14).padding(2).offset(x: 12 * on)
+                .shadow(color: .black.opacity(0.15), radius: 1, y: 0.5)
+        }
+        .frame(width: 30, height: 18)
+    }
+}
+
+// MARK: - Settings
+
+struct SettingsMock: View {
+    let t: Double
+    let story: DemoStory
+
+    var body: some View {
+        let leadTime = t >= Timeline.leadTimeChanged ? "1 minute before" : "When it starts"
+        let leadFlash = window(t, Timeline.leadTimeChanged, Timeline.leadTimeChanged + 0.6, fade: 0.15)
+        let pressed = t >= Timeline.checkForUpdates && t < Timeline.checkForUpdates + 0.25
+        let dialog = window(t, Timeline.upToDateIn, Timeline.settingsOut - 0.1, fade: 0.25)
+        VStack(spacing: 0) {
+            // Title bar + toolbar tabs
+            VStack(spacing: 8) {
+                ZStack {
+                    HStack(spacing: 8) {
+                        ForEach([0xFF5F57, 0xFEBC2E, 0x28C840] as [UInt32], id: \.self) { Circle().fill(Color(hex: $0)).frame(width: 12) }
+                        Spacer()
+                    }
+                    Text("Better Than Dato Settings").font(.system(size: 13, weight: .semibold))
+                }
+                HStack(spacing: 16) {
+                    tab("gearshape", "General", selected: true)
+                    tab("menubar.rectangle", "Menu Bar")
+                    tab("calendar", "Calendar")
+                    tab("person.2", "Accounts")
+                    tab("keyboard", "Shortcuts")
+                    tab("lock", "Permissions")
+                }
+            }
+            .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 10)
+            .background(Color(hex: 0xE9E9EC))
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                sectionTitle("Meeting alerts")
+                box {
+                    row("Full-screen alert when a meeting starts") { ToggleMock(on: 1) }
+                    Divider()
+                    row("Show it") {
+                        HStack(spacing: 4) {
+                            Text(leadTime)
+                            Image(systemName: "chevron.up.chevron.down").font(.system(size: 9))
+                        }
+                        .padding(.horizontal, 8).padding(.vertical, 3)
+                        .background(RoundedRectangle(cornerRadius: 5).fill(accent.opacity(0.18 * leadFlash)))
+                    }
+                    Divider()
+                    row("Only for events with a video call link") { ToggleMock(on: ramp(t, Timeline.videoOnlyOn, 0.25)) }
+                    Divider()
+                    row(nil) { button("Preview alert", pressed: false) }
+                }
+                sectionTitle("Updates").padding(.top, 6)
+                box {
+                    row("Version") { Text(story.appVersion).foregroundStyle(.secondary) }
+                    Divider()
+                    row("Check for updates automatically") { ToggleMock(on: 1) }
+                    Divider()
+                    row(nil) { button("Check for Updates…", pressed: pressed) }
+                }
+            }
+            .font(.system(size: 13))
+            .padding(18)
+            Spacer(minLength: 0)
+        }
+        .frame(width: 520, height: 470)
+        .background(Color(hex: 0xF4F4F6))
+        .overlay {
+            if dialog > 0 {
+                ZStack {
+                    Color.black.opacity(0.12 * dialog)
+                    VStack(spacing: 10) {
+                        Image(nsImage: DemoAssets.icon).resizable().frame(width: 56, height: 56)
+                        Text("You’re up to date!").font(.system(size: 14, weight: .bold))
+                        Text("Better Than Dato \(story.appVersion) is currently the newest version available.")
+                            .font(.system(size: 12)).multilineTextAlignment(.center).foregroundStyle(.secondary)
+                        Text("OK")
+                            .font(.system(size: 13, weight: .medium)).foregroundStyle(.white)
+                            .frame(width: 220).padding(.vertical, 5)
+                            .background(RoundedRectangle(cornerRadius: 6).fill(accent))
+                            .padding(.top, 4)
+                    }
+                    .padding(20)
+                    .frame(width: 280)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+                    .shadow(color: .black.opacity(0.25), radius: 16, y: 6)
+                    .scaleEffect(0.92 + 0.08 * dialog)
+                    .opacity(dialog)
+                }
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.35), radius: 26, y: 12)
+    }
+
+    private func tab(_ symbol: String, _ title: String, selected: Bool = false) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: symbol).font(.system(size: 16))
+            Text(title).font(.system(size: 10))
+        }
+        .foregroundStyle(selected ? accent : Color.secondary)
+        .frame(width: 66, height: 44)
+        .background(RoundedRectangle(cornerRadius: 7).fill(Color.black.opacity(selected ? 0.07 : 0)))
+    }
+
+    private func sectionTitle(_ text: String) -> some View {
+        Text(text).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).padding(.leading, 6)
+    }
+
+    private func box<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(spacing: 0) { content() }
+            .padding(.horizontal, 12)
+            .background(RoundedRectangle(cornerRadius: 9).fill(Color.white))
+            .overlay(RoundedRectangle(cornerRadius: 9).stroke(Color.black.opacity(0.06)))
+    }
+
+    private func row<Trailing: View>(_ title: String?, @ViewBuilder trailing: () -> Trailing) -> some View {
+        HStack {
+            if let title { Text(title) }
+            Spacer()
+            trailing()
+        }
+        .frame(height: 34)
+    }
+
+    private func button(_ title: String, pressed: Bool) -> some View {
+        Text(title)
+            .padding(.horizontal, 12).padding(.vertical, 4)
+            .background(RoundedRectangle(cornerRadius: 6).fill(Color.black.opacity(pressed ? 0.18 : 0.07)))
     }
 }
 

@@ -30,6 +30,8 @@ struct DemoStory {
     let reminders: [ReminderItem]
     let overdueReminderID = "r-passport"
     let quickAddText = "Lunch with Sam tomorrow 1pm 1h #personal"
+    /// Shown in the Settings scene; scripts/make-demo-video.sh passes the latest release tag.
+    let appVersion = ProcessInfo.processInfo.environment["DEMO_VERSION"] ?? "0.2.1"
 
     init() {
         var calendar = Calendar(identifier: .gregorian)

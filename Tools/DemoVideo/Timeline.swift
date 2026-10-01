@@ -2,7 +2,7 @@ import Foundation
 
 /// When each beat of the demo happens, in seconds.
 enum Timeline {
-    static let duration = 32.0
+    static let duration = 37.0
 
     static let titleOut = 3.0
     static let popoverIn = 7.4
@@ -17,7 +17,13 @@ enum Timeline {
     static let toastOut = 22.9
     static let alertIn = 23.3
     static let alertOut = 27.7
-    static let endIn = 27.9
+    static let settingsIn = 27.9
+    static let leadTimeChanged = 29.5
+    static let videoOnlyOn = 30.3
+    static let checkForUpdates = 31.1
+    static let upToDateIn = 31.4
+    static let settingsOut = 33.1
+    static let endIn = 33.0
 
     static let captions: [(start: Double, end: Double, text: String)] = [
         (3.4, 7.2, "Your next meeting, counting down in the menu bar"),
@@ -25,6 +31,7 @@ enum Timeline {
         (13.3, 15.4, "Tick off reminders right in the agenda"),
         (15.8, 22.8, "Quick add: just type it — or press ⌥⌘N from any app"),
         (23.6, 27.5, "A full-screen alert when a meeting starts — Return joins"),
+        (28.2, 32.9, "Alerts, shortcuts and automatic updates — all in Settings"),
     ]
 
     static func typedText(_ full: String, at t: Double) -> String {

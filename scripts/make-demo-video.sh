@@ -8,6 +8,9 @@ cd "$(dirname "$0")/.."
 source scripts/sdk-env.sh
 command -v ffmpeg >/dev/null || { echo "ffmpeg is required: brew install ffmpeg" >&2; exit 1; }
 
+# The Settings scene shows the latest release's version.
+DEMO_VERSION="$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || true)"
+export DEMO_VERSION="${DEMO_VERSION:-0.0.0}"
 swift run -c release DemoVideo docs/demo.mp4
 ffmpeg -y -loglevel error -i docs/demo.mp4 \
   -vf "fps=12,scale=960:-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=160:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=2:diff_mode=rectangle" \
