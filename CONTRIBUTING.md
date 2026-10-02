@@ -72,6 +72,11 @@ If your change affects what the demo shows, mention it; the maintainer re-render
 Maintainers publish releases with `scripts/release.sh <version>` after merging. Installed copies update themselves.
 You don't need to bump versions in your pull request.
 
+## License
+
+Better Than Dato is [MIT licensed](LICENSE). By contributing, you agree that your contributions are licensed
+under the same terms.
+
 ## Be kind
 
 Assume good intent, keep feedback about the code, and help newcomers find their way. That's the whole code of

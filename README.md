@@ -167,3 +167,8 @@ Global shortcuts can be changed in Settings → Shortcuts.
 In short: every decision the UI shows (menu bar title, agenda, quick-add parsing, meeting alerts) lives in
 `Sources/DatoCore`, which only depends on Foundation and is unit-tested. `Sources/BetterThanDato` is a thin layer
 that reads EventKit and renders.
+
+## License
+
+[MIT](LICENSE) © 2026 Ahmed Ezzat. Sparkle, used for automatic updates, is distributed under its own
+[MIT-style license](https://github.com/sparkle-project/Sparkle/blob/2.x/LICENSE).
