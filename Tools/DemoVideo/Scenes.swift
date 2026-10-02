@@ -727,65 +727,74 @@ struct SettingsMock: View {
     let story: DemoStory
 
     var body: some View {
+        let onGeneral = t >= Timeline.generalTab
         let leadTime = t >= Timeline.leadTimeChanged ? "1 minute before" : "When it starts"
         let leadFlash = window(t, Timeline.leadTimeChanged, Timeline.leadTimeChanged + 0.6, fade: 0.15)
         let pressed = t >= Timeline.checkForUpdates && t < Timeline.checkForUpdates + 0.25
         let dialog = window(t, Timeline.upToDateIn, Timeline.settingsOut - 0.1, fade: 0.25)
         VStack(spacing: 0) {
-            // Title bar + toolbar tabs
-            VStack(spacing: 8) {
-                ZStack {
-                    HStack(spacing: 8) {
-                        ForEach([0xFF5F57, 0xFEBC2E, 0x28C840] as [UInt32], id: \.self) { Circle().fill(Color(hex: $0)).frame(width: 12) }
-                        Spacer()
-                    }
-                    Text("Better Than Dato Settings").font(.system(size: 13, weight: .semibold))
+            // Title bar and the tab strip, like the app's Settings window.
+            ZStack {
+                HStack(spacing: 8) {
+                    ForEach([0xFF5F57, 0xFEBC2E, 0x28C840] as [UInt32], id: \.self) { Circle().fill(Color(hex: $0)).frame(width: 12) }
+                    Spacer()
                 }
-                HStack(spacing: 16) {
-                    tab("gearshape", "General", selected: true)
-                    tab("menubar.rectangle", "Menu Bar")
-                    tab("calendar", "Calendar")
-                    tab("person.2", "Accounts")
-                    tab("keyboard", "Shortcuts")
-                    tab("lock", "Permissions")
-                }
+                Text("Better Than Dato Settings").font(.system(size: 13, weight: .semibold))
             }
             .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 10)
-            .background(Color(hex: 0xE9E9EC))
-            Divider()
+            HStack(spacing: 0) {
+                ForEach(["General", "Menu Bar", "Calendar", "Alerts", "Accounts", "Shortcuts", "Permissions"], id: \.self) { name in
+                    let selected = name == (onGeneral ? "General" : "Alerts")
+                    Text(name)
+                        .font(.system(size: 11.5))
+                        .padding(.horizontal, 9).padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(selected ? 1 : 0)))
+                        .shadow(color: .black.opacity(selected ? 0.12 : 0), radius: 1, y: 0.5)
+                }
+            }
+            .padding(2)
+            .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.06)))
+            .padding(.bottom, 6)
 
             VStack(alignment: .leading, spacing: 8) {
-                sectionTitle("Meeting alerts")
-                box {
-                    row("Full-screen alert when a meeting starts") { ToggleMock(on: 1) }
-                    Divider()
-                    row("Show it") {
-                        HStack(spacing: 4) {
-                            Text(leadTime)
-                            Image(systemName: "chevron.up.chevron.down").font(.system(size: 9))
-                        }
-                        .padding(.horizontal, 8).padding(.vertical, 3)
-                        .background(RoundedRectangle(cornerRadius: 5).fill(accent.opacity(0.18 * leadFlash)))
+                if onGeneral {
+                    sectionTitle("Startup")
+                    box { row("Launch at login") { ToggleMock(on: 1) } }
+                    sectionTitle("Updates").padding(.top, 6)
+                    box {
+                        row("Version") { Text(story.appVersion).foregroundStyle(.secondary) }
+                        Divider()
+                        row("Check for updates automatically") { ToggleMock(on: 1) }
+                        Divider()
+                        row(nil) { button("Check for Updates…", pressed: pressed) }
                     }
-                    Divider()
-                    row("Only for events with a video call link") { ToggleMock(on: ramp(t, Timeline.videoOnlyOn, 0.25)) }
-                    Divider()
-                    row(nil) { button("Preview alert", pressed: false) }
-                }
-                sectionTitle("Updates").padding(.top, 6)
-                box {
-                    row("Version") { Text(story.appVersion).foregroundStyle(.secondary) }
-                    Divider()
-                    row("Check for updates automatically") { ToggleMock(on: 1) }
-                    Divider()
-                    row(nil) { button("Check for Updates…", pressed: pressed) }
+                } else {
+                    sectionTitle("Meeting alerts")
+                    box {
+                        row("Full-screen alert when a meeting starts") { ToggleMock(on: 1) }
+                        Divider()
+                        row("Show it") {
+                            HStack(spacing: 4) {
+                                Text(leadTime)
+                                Image(systemName: "chevron.up.chevron.down").font(.system(size: 9))
+                            }
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(RoundedRectangle(cornerRadius: 5).fill(accent.opacity(0.18 * leadFlash)))
+                        }
+                        Divider()
+                        row("Only for events with a video call link") { ToggleMock(on: ramp(t, Timeline.videoOnlyOn, 0.25)) }
+                        Divider()
+                        row(nil) { button("Preview Alert", pressed: false) }
+                    }
+                    Text("The alert covers every screen. Press Return to join the meeting or Esc to dismiss.")
+                        .font(.system(size: 11)).foregroundStyle(.secondary).padding(.leading, 6)
                 }
             }
             .font(.system(size: 13))
-            .padding(18)
+            .padding(.horizontal, 18).padding(.top, 8)
             Spacer(minLength: 0)
         }
-        .frame(width: 520, height: 470)
+        .frame(width: 600, height: 400)
         .background(Color(hex: 0xF4F4F6))
         .overlay {
             if dialog > 0 {
@@ -815,18 +824,8 @@ struct SettingsMock: View {
         .shadow(color: .black.opacity(0.35), radius: 26, y: 12)
     }
 
-    private func tab(_ symbol: String, _ title: String, selected: Bool = false) -> some View {
-        VStack(spacing: 3) {
-            Image(systemName: symbol).font(.system(size: 16))
-            Text(title).font(.system(size: 10))
-        }
-        .foregroundStyle(selected ? accent : Color.secondary)
-        .frame(width: 66, height: 44)
-        .background(RoundedRectangle(cornerRadius: 7).fill(Color.black.opacity(selected ? 0.07 : 0)))
-    }
-
     private func sectionTitle(_ text: String) -> some View {
-        Text(text).font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary).padding(.leading, 6)
+        Text(text).font(.system(size: 12, weight: .semibold)).padding(.leading, 6)
     }
 
     private func box<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {

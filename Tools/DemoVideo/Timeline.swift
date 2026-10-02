@@ -18,10 +18,12 @@ enum Timeline {
     static let alertIn = 23.3
     static let alertOut = 27.7
     static let settingsIn = 27.9
-    static let leadTimeChanged = 29.5
-    static let videoOnlyOn = 30.3
-    static let checkForUpdates = 31.1
-    static let upToDateIn = 31.4
+    static let leadTimeChanged = 29.1
+    static let videoOnlyOn = 29.8
+    /// The Settings scene opens on Alerts, then switches to General for Check for Updates (as in the app).
+    static let generalTab = 30.6
+    static let checkForUpdates = 31.3
+    static let upToDateIn = 31.6
     static let settingsOut = 33.1
     static let endIn = 33.0
 
