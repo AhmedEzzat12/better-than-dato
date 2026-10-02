@@ -6,6 +6,9 @@
 # Installed copies find the new version through the appcast and update themselves.
 #
 # Usage: scripts/release.sh 1.2.0
+# Release notes (shown in the app's update window and on GitHub) are generated from the user-facing commits
+# since the previous release — feat:/fix: with no scope or the app/core scope. To write your own instead:
+#   RELEASE_NOTES=notes.txt scripts/release.sh 1.2.0
 # Optional: SIGN_IDENTITY="<code-signing certificate name>" keeps one identity across updates,
 #           so macOS doesn't ask for Calendar/Reminders access again after each update.
 #
@@ -25,7 +28,7 @@ fi
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "Commit or stash your changes first." >&2; exit 1
 fi
-git fetch --quiet origin
+git fetch --quiet --tags origin
 if [[ "$(git rev-parse HEAD)" != "$(git rev-parse '@{u}')" ]]; then
   echo "Push your commits first — the release tag points at what's on GitHub." >&2; exit 1
 fi
@@ -46,8 +49,20 @@ scripts/build-app.sh release
 ZIP="build/BetterThanDato.zip"
 rm -f "$ZIP"
 ditto -c -k --sequesterRsrc --keepParent build/BetterThanDato.app "$ZIP"
-scripts/make-appcast.sh "$VERSION" "$BUILD_NUMBER" "$ZIP"
+NOTES="build/release-notes.txt"
+if [[ -n "${RELEASE_NOTES:-}" ]]; then
+  cp "$RELEASE_NOTES" "$NOTES"
+else
+  PREVIOUS_TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+  git log ${PREVIOUS_TAG:+"$PREVIOUS_TAG..HEAD"} --format=%s \
+    | { grep -E '^(feat|fix)(\((app|core)\))?: ' || true; } \
+    | sed -E 's/^(feat|fix)(\([^)]*\))?: //' \
+    | awk '{ print "• " toupper(substr($0, 1, 1)) substr($0, 2) }' > "$NOTES"
+  [[ -s "$NOTES" ]] || echo "• Small improvements and fixes." > "$NOTES"
+fi
+echo "Release notes:"; cat "$NOTES"
+scripts/make-appcast.sh "$VERSION" "$BUILD_NUMBER" "$ZIP" "$NOTES"
 
 gh release create "$TAG" "$ZIP" build/appcast.xml \
-  --target "$(git rev-parse HEAD)" --title "Better Than Dato $VERSION" --generate-notes
+  --target "$(git rev-parse HEAD)" --title "Better Than Dato $VERSION" --notes-file "$NOTES"
 echo "Published $TAG"

@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Writes build/appcast.xml — the feed Sparkle checks — for one release, with the zip's EdDSA signature.
-# Usage: scripts/make-appcast.sh <version> <build-number> <zip>
+# Usage: scripts/make-appcast.sh <version> <build-number> <zip> [release-notes.txt]
+# Release notes are embedded as plain text, so the update window shows text instead of loading a web page.
 # Signs with the Sparkle key in your login keychain, or with $SPARKLE_PRIVATE_KEY when set (e.g. in CI).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 VERSION="$1"
 BUILD="$2"
 ZIP="$3"
+NOTES_FILE="${4:-}"
 REPO="${GITHUB_REPOSITORY:-AhmedEzzat12/better-than-dato}"
 source scripts/sparkle-tools.sh
 
@@ -20,6 +22,11 @@ fi
 URL="https://github.com/$REPO/releases/download/v$VERSION/$(basename "$ZIP")"
 PUB_DATE="$(LC_ALL=C date -u '+%a, %d %b %Y %H:%M:%S +0000')"
 MIN_OS="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' Resources/Info.plist)"
+DESCRIPTION=""
+if [[ -n "$NOTES_FILE" ]]; then
+  # Sparkle shows <description> only when there's no releaseNotesLink. CDATA keeps the text verbatim.
+  DESCRIPTION="<description sparkle:format=\"plain-text\"><![CDATA[$(cat "$NOTES_FILE")]]></description>"
+fi
 
 mkdir -p build
 cat > build/appcast.xml <<EOF
@@ -33,7 +40,7 @@ cat > build/appcast.xml <<EOF
       <sparkle:version>$BUILD</sparkle:version>
       <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>$MIN_OS</sparkle:minimumSystemVersion>
-      <sparkle:releaseNotesLink>https://github.com/$REPO/releases/tag/v$VERSION</sparkle:releaseNotesLink>
+      $DESCRIPTION
       <enclosure url="$URL" type="application/octet-stream" $ENCLOSURE_ATTRS/>
     </item>
   </channel>
