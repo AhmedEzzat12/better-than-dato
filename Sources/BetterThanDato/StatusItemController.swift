@@ -11,6 +11,9 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
     private let model: AppModel
     private let prefs: PreferencesStore
     private var renderedDay = 0
+    /// AppKit leaves only ~5.5 pt between a status item's icon and its title, which looks cramped.
+    /// A thin space + hair space before the title brings it to ~8.5 pt (measured), in both title styles.
+    private static let iconTitleGap = "\u{2009}\u{200A}"
 
     init(model: AppModel, prefs: PreferencesStore) {
         self.model = model
@@ -80,11 +83,11 @@ final class StatusItemController: NSObject, NSPopoverDelegate {
         button.imagePosition = .imageLeading
         if prefs.showColorDot, let color = model.calendarInfo(title.event.calendarID)?.color {
             let font = NSFont.menuBarFont(ofSize: 0)
-            let text = NSMutableAttributedString(string: "● ", attributes: [.font: font, .foregroundColor: NSColor(color)])
+            let text = NSMutableAttributedString(string: Self.iconTitleGap + "● ", attributes: [.font: font, .foregroundColor: NSColor(color)])
             text.append(NSAttributedString(string: title.text, attributes: [.font: font, .foregroundColor: NSColor.labelColor]))
             button.attributedTitle = text
         } else {
-            button.title = title.text
+            button.title = Self.iconTitleGap + title.text
         }
     }
 }

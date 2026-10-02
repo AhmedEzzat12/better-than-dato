@@ -249,7 +249,7 @@ struct StatusItem: View {
     var body: some View {
         let open = t >= Timeline.popoverIn && t < Timeline.alertIn
         let pulse = window(t, 3.6, Timeline.popoverIn) * (0.55 + 0.45 * sin(t * 5.5))
-        HStack(spacing: 7) {
+        HStack(spacing: 9.5) {
             MenuCalendarIcon(day: story.calendar.component(.day, from: story.now))
             Text(story.menuBarTitle).font(.system(size: 15, weight: .medium))
         }
